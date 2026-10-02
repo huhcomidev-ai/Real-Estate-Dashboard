@@ -1,4 +1,4 @@
-import { createServerClient as createSupabaseServerClient } from '@/lib/supabase-server';
+﻿import { createServerClient as createSupabaseServerClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 import { encrypt } from '@/lib/vault';
 
