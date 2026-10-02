@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { HubSpotCard } from './hubspot-card';
 
 export default async function Dashboard() {
   const supabase = await createServerClient();
@@ -9,6 +10,13 @@ export default async function Dashboard() {
   if (!user) {
     redirect('/login');
   }
+
+  // Look up the user's profile to get their tenant_id
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -27,24 +35,17 @@ export default async function Dashboard() {
           Signed in as <span className="text-slate-200">{user.email}</span>
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Placeholder cards — we'll fill these with real integrations later */}
-          {['QuickBooks', 'Twilio', 'Property Data'].map((name) => (
-            <div
-              key={name}
-              className="rounded-xl border border-slate-800 bg-slate-900/50 p-5"
-            >
-              <div className="text-sm font-medium text-slate-200">{name}</div>
-              <p className="mt-1 text-xs text-slate-500">Not connected</p>
-              <button
-                disabled
-                className="mt-4 w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs font-medium text-slate-500"
-              >
-                Connect
-              </button>
-            </div>
-          ))}
-        </div>
+        {!profile && (
+          <div className="mt-6 rounded-lg border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-300">
+            You don&apos;t have a workspace yet. This is why integrations can&apos;t load.
+          </div>
+        )}
+
+        {profile && (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <HubSpotCard tenantId={profile.tenant_id} />
+          </div>
+        )}
       </main>
     </div>
   );
